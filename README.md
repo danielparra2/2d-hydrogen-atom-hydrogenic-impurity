@@ -19,8 +19,8 @@
 
 <p align="center">
   <sub><b>The eight orbitals of a hydrogenic donor in GaAs</b>, computed with an in-house P2 finite-element
-  solver on a Delaunay mesh (<i>R</i> = 200 nm, <i>a</i>* = 10.19 nm). The color is
-  |&psi;|&sup2;/|&psi;|&sup2;<sub>max</sub>. These are not analytic plots: they come out of the eigensolver.</sub>
+  solver on a Delaunay mesh (<i>R</i> = 200 nm, <i>a</i>* = 10.19 nm). Probability density
+  |&psi;|&sup2; with the same colour scale as the thesis figures. These are not analytic plots: they come out of the eigensolver.</sub>
 </p>
 
 <p align="center">
@@ -29,7 +29,7 @@
 
 <p align="center">
   <sub><b>The same solver, the same equation, a different scale:</b> the 2D hydrogen atom in vacuum
-  (<i>a</i>* = 0.0529 nm, domain 2.12 nm). Compare the nodal structure with the GaAs panel above.</sub>
+  (<i>a</i>* = 0.0529 nm). Compare the nodal structure with the GaAs panel above.</sub>
 </p>
 
 > [!TIP]
@@ -53,7 +53,6 @@ and the effective Rydberg `Ry*` change:
 | `a*` | **0.052918 nm** | **10.1886 nm** |
 | `Ry*` | **13.606 eV** | **5.4779 meV** |
 | Ground state `E0 = -4 Ry*` | **-54.423 eV** | **-21.912 meV** |
-| FEM domain | `40 a*` = 2.12 nm | 200 nm |
 
 This is why a hydrogen atom and a donor in a semiconductor share the same
 orbitals, only stretched by `a*` and shifted by `Ry*`.
@@ -125,7 +124,7 @@ The full derivation — including the original Spanish appendix B text — is in
 </td>
 <td width="50%" align="center">
   <img src="figures/mesh_vacuum.png" alt="Delaunay mesh for the vacuum atom, with a zoom towards the origin" width="100%"><br>
-  <sub><b>Vacuum.</b> Same strategy on a 2.12 nm domain (<i>R</i> = 40 <i>a</i>*).</sub>
+  <sub><b>Vacuum.</b> Same meshing strategy, in units of <i>a</i>*.</sub>
 </td>
 </tr>
 </table>

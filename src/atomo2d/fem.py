@@ -638,10 +638,25 @@ FONDO = (205 / 255, 225 / 255, 245 / 255)
 
 
 def mapa_orbitales():
-    import matplotlib.pyplot as plt
+    """Colour map of the thesis figures.
 
-    cmap = plt.get_cmap("jet").copy()
-    cmap.set_under(FONDO)
+    Light-blue background that fades continuously into blue, cyan, green,
+    yellow and red, as in the COMSOL exports used in the thesis.
+    """
+    from matplotlib.colors import LinearSegmentedColormap
+
+    puntos = [
+        (0.00, FONDO),
+        (0.06, (0.62, 0.66, 0.93)),
+        (0.16, (0.20, 0.20, 0.86)),
+        (0.30, (0.13, 0.33, 1.00)),
+        (0.44, (0.20, 0.85, 1.00)),
+        (0.58, (0.55, 1.00, 0.35)),
+        (0.72, (1.00, 0.92, 0.00)),
+        (0.86, (0.93, 0.10, 0.00)),
+        (1.00, (0.45, 0.00, 0.00)),
+    ]
+    cmap = LinearSegmentedColormap.from_list("tesis", puntos, N=512)
     cmap.set_bad("white")
     return cmap
 
@@ -651,7 +666,7 @@ def dibujar_orbital(
     Z: np.ndarray,
     R_nm: float,
     titulo: str = "",
-    vmin_frac: float = 0.01,
+    vmin_frac: float = 0.0,
 ):
     """Dibuja |psi|^2 en el disco, con el estilo de la tesis."""
     import matplotlib.pyplot as plt

@@ -9,7 +9,6 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.colors import PowerNorm
 from matplotlib.tri import Triangulation
 
 
@@ -50,91 +49,56 @@ def mesh_title(mesh: dict, title: str) -> str:
     )
 
 
-def plot_orbitals(
-    orb: dict[str, np.ndarray],
-    energies: dict[str, float],
-    evaluator,
-    a_star_nm: float,
-    estados: list[tuple[str, int, int, str]],
-    r_zoom_nm: float,
-    title: str,
-    outfile: str | Path,
-    npts: int = 401,
-) -> None:
-    """2 x 4 grid of |psi|^2 for the first eight states."""
-    fig, axs = plt.subplots(2, 4, figsize=(17, 8.5))
-    norm = PowerNorm(gamma=0.55, vmin=0.0, vmax=1.0)
-    im = None
+def _etiqueta_energia(e_mev: float) -> str:
+    """Energy label: eV for atomic scales, meV for semiconductor scales."""
+    if abs(e_mev) >= 1000.0:
+        return f"$E = {e_mev / 1000.0:.3f}$ eV"
+    return f"$E = {e_mev:.4f}$ meV"
 
-    x = np.linspace(-r_zoom_nm, r_zoom_nm, npts)
-    X, Y = np.meshgrid(x, x)
 
+def _panel(densidades, energias, estados, r_nm, title, outfile):
+    """2 x 4 grid of probability densities in the thesis style.
+
+    Same look as the thesis figures: rainbow colour map on a light-blue
+    background, linear scale, disk with a black outline and no axes.
+    """
+    from .fem import dibujar_orbital
+
+    fig, axs = plt.subplots(2, 4, figsize=(16, 8.6))
     for ax, (name, _n, _m, _kind) in zip(axs.ravel(), estados):
-        Z = evaluator(orb[name], X / a_star_nm, Y / a_star_nm)
-        W = np.abs(Z) ** 2
-        W = W / np.nanmax(W)
-        im = ax.imshow(
-            W,
-            extent=[-r_zoom_nm, r_zoom_nm, -r_zoom_nm, r_zoom_nm],
-            origin="lower",
-            cmap="inferno",
-            norm=norm,
-            interpolation="bilinear",
-        )
-        ax.set_aspect("equal")
-        ax.set_xticks([])
-        ax.set_yticks([])
-        ax.set_title(f"{name}   $E={energies[name]:.4f}$ meV", fontsize=11)
-
-    fig.colorbar(
-        im, ax=axs, shrink=0.75, pad=0.02, label=r"$|\psi|^2/|\psi|^2_{\max}$"
-    )
-    fig.suptitle(title, fontsize=14)
-    fig.savefig(outfile, dpi=160, bbox_inches="tight")
-    plt.close(fig)
-
-
-def plot_analytic_orbitals(
-    material,
-    estados,
-    r_zoom_nm: float,
-    title: str,
-    outfile: str | Path | None = None,
-    npts: int = 401,
-):
-    """2 x 4 grid of analytic |psi|^2 for the first eight states."""
-    from .analitica import energia, orbital_grid
-
-    fig, axs = plt.subplots(2, 4, figsize=(17, 8.5))
-    norm = PowerNorm(gamma=0.55, vmin=0.0, vmax=1.0)
-    im = None
-
-    for ax, (name, n, m, kind) in zip(axs.ravel(), estados):
-        X, Y, psi = orbital_grid(
-            n, m, kind=kind, r_max_nm=r_zoom_nm, npts=npts, material=material
-        )
-        W = np.abs(psi) ** 2
-        W = W / np.nanmax(W)
-        im = ax.imshow(
-            W,
-            extent=[-r_zoom_nm, r_zoom_nm, -r_zoom_nm, r_zoom_nm],
-            origin="lower",
-            cmap="inferno",
-            norm=norm,
-            interpolation="bilinear",
-        )
-        ax.set_aspect("equal")
-        ax.set_xticks([])
-        ax.set_yticks([])
-        ax.set_title(f"{name}   $E={energia(n, material):.4f}$ meV",
-                     fontsize=11)
-
-    fig.colorbar(
-        im, ax=axs, shrink=0.75, pad=0.02, label=r"$|\psi|^2/|\psi|^2_{\max}$"
-    )
-    fig.suptitle(title, fontsize=14)
+        dibujar_orbital(ax, densidades[name], r_nm)
+        ax.set_title(f"{name}    {_etiqueta_energia(energias[name])}",
+                     fontsize=13, pad=8)
+    fig.suptitle(title, fontsize=17, weight="bold")
+    fig.tight_layout(rect=(0, 0, 1, 0.95), h_pad=2.5, w_pad=1.0)
     if outfile is not None:
-        fig.savefig(outfile, dpi=160, bbox_inches="tight")
+        fig.savefig(outfile, dpi=150, bbox_inches="tight", facecolor="white")
         plt.close(fig)
         return None
     return fig
+
+
+def plot_orbitals(orb, energies, evaluator, a_star_nm, estados, r_zoom_nm,
+                  title, outfile, npts: int = 501):
+    """Probability density |psi|^2 of the FEM orbitals (thesis style)."""
+    x = np.linspace(-r_zoom_nm, r_zoom_nm, npts)
+    X, Y = np.meshgrid(x, x)
+    dens = {
+        name: evaluator(orb[name], X / a_star_nm, Y / a_star_nm)
+        for name, *_ in estados
+    }
+    return _panel(dens, energies, estados, r_zoom_nm, title, outfile)
+
+
+def plot_analytic_orbitals(material, estados, r_zoom_nm, title,
+                           outfile=None, npts: int = 501):
+    """Probability density |psi|^2 of the analytic orbitals (thesis style)."""
+    from .analitica import energia, orbital_grid
+
+    dens, ener = {}, {}
+    for name, n, m, kind in estados:
+        _, _, psi = orbital_grid(n, m, kind=kind, r_max_nm=r_zoom_nm,
+                                 npts=npts, material=material)
+        dens[name] = psi
+        ener[name] = energia(n, material)
+    return _panel(dens, ener, estados, r_zoom_nm, title, outfile)

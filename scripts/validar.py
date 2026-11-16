@@ -42,9 +42,10 @@ CASOS = [
         "R_check_nm": 60.0 * VACIO.a_star_nm,
         "r0_nm": 0.0001 * VACIO.a_star_nm,
         "hmax_nm": 0.2 * VACIO.a_star_nm,
-        "zoom_nm": 1.0,
+        "zoom_nm": 20.0 * VACIO.a_star_nm,
         "mesh_zoom_nm": 0.2,
         "title": "2D hydrogen atom in vacuum",
+        "fig_title": "2D hydrogen atom — probability density (FEM)",
     },
     {
         "name": "gaas",
@@ -53,9 +54,10 @@ CASOS = [
         "R_check_nm": 300.0,
         "r0_nm": 0.001,
         "hmax_nm": 2.5,
-        "zoom_nm": 100.0,
+        "zoom_nm": 200.0,
         "mesh_zoom_nm": 35.0,
         "title": "Hydrogenic donor in GaAs",
+        "fig_title": "Hydrogenic donor in GaAs — probability density (FEM, R = 200 nm)",
     },
 ]
 
@@ -187,10 +189,7 @@ def procesar_caso(caso: dict) -> dict:
         material.a_star_nm,
         an.ESTADOS,
         r_zoom_nm=caso["zoom_nm"],
-        title=(
-            f"{caso['title']} (FEM P2, R = {caso['R_nm']:.3g} nm, "
-            f"a* = {material.a_star_nm:.3g} nm)"
-        ),
+        title=caso["fig_title"],
         outfile=fig_orbitals,
     )
     plot_mesh(
